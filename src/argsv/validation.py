@@ -23,8 +23,14 @@ from typing import(
 from functools import wraps
 from inspect import getcallargs
 
-from _pattern import Pattern, PatternType
-from errors import ValidationError
+from ._pattern import (
+    Pattern,
+    PatternType,
+)
+from .errors import (
+    ValidationError,
+    ValidatorError,
+)
 
 
 class ArgsVal:
@@ -110,16 +116,21 @@ class ArgsVal:
             try:
                 # Calling Validator with 'a'
                 v(a)
+            # Handling validator errors
+            except ValidatorError:
+                raise
+            # Handling exceptions
+            # and creating custom messages
             except BaseException as e:
-                # Handling exceptions and creating custom messages
+                err_msg = (
+                    "Validation stopped while checking "
+                    f"the argument passed to parameter '{name}', "
+                    f"in callable '{self._callable.__name__}'\n"
+                    f"From validator: {v.name}\n"
+                    f" └── {type(e).__name__}: {e}"
+                )
                 raise ValidationError(
-                    (
-                        "Validation stopped while checking "
-                        f"the argument passed to parameter '{name}', "
-                        f"in callable '{self._callable.__name__}'\n"
-                        f"From validator: {v.name}\n"
-                        f" └── {type(e).__name__}: {e}"
-                    )
+                    err_msg
                 ) from None
 
     def _verify_pattern(self, pattern: PatternType) -> Pattern:
