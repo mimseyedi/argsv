@@ -26,17 +26,17 @@ from typing import (
     Callable,
 )
 # Internal imports
-from _validators import (
+from ._validators import (
     Validator,
     CallVal,
 )
-from errors import PatternError
+from .errors import PatternError
 
 
 # Defining a type for Pattern for easier access
 PatternType = Dict[
     str,
-    Union[Validator, Callable[[Any], None]],
+    Union[Validator, Callable[[Any], None]]
 ]
 
 
@@ -110,19 +110,21 @@ class Pattern:
 
         # Is Pattern a dict?
         if not isinstance(pattern, dict):
-            raise PatternError(
+            err_msg = (
                 f"Patterns must be defined "
                 f"in the form of a 'dict'"
             )
+            raise PatternError(err_msg)
         # Iterate through Pattern items
         for a, v in pattern.items():
             # Are Pattern keys of type string?
             if not isinstance(a, str):
-                raise PatternError(
+                err_msg = (
                     f"All Pattern keys must "
                     f"be of type 'str'. "
                     f"Received: {a} from {type(a)}"
                 )
+                raise PatternError(err_msg)
             # Are Pattern values Callable or Validator?
             if callable(v):
                 if not isinstance(v, Validator):
@@ -133,11 +135,12 @@ class Pattern:
             else:
                 # Throw an exception
                 # if none of these conditions apply.
-                raise PatternError(
+                err_msg = (
                     "All Pattern values must "
                     "be of type 'Validator'. "
                     f"Received: {v} from {type(v)}"
                 )
+                raise PatternError(err_msg)
         # Return the dict itself, if confirmed
         return pattern
 
@@ -168,10 +171,11 @@ class Pattern:
         for param, _ in self:
             # Checking for Pattern keys in argument names
             if param not in args.keys():
-                raise PatternError(
+                err_msg = (
                     "Pattern does not match callable. "
                     f"There is no parameter "
                     f"named '{param}' in callable"
                 )
+                raise PatternError(err_msg)
         # Returning the Pattern itself
         return self
