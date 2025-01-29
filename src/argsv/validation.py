@@ -170,6 +170,13 @@ class ArgsVal:
             raise TypeError(err_msg)
         return callable_
 
+    def __repr__(self):
+        return (
+            f"ArgsVal(callable={self._callable}, "
+            f"pattern={self._pattern}, "
+            f"args={self._args},"
+            f"kwargs={self.kwargs})"
+        )
 
 def argsval(**pattern) -> Callable:
     """
