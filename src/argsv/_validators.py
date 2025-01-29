@@ -13,6 +13,7 @@ In this file, built-in Validators such as::
     TypeVal
     FromTo
     CompVal
+    ContansVal
 
 are implemented by inheriting from 'Validator'.
 These validators are implemented to be used and
@@ -49,6 +50,7 @@ from inspect import signature
 from .errors import (
     ValidatorError,
     ValidationError,
+    ValidationKeyError,
 )
 
 
@@ -84,6 +86,7 @@ class Validator(ABC):
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     """
 
     def __init__(
@@ -94,12 +97,14 @@ class Validator(ABC):
         key: KeyType = None,
         args: Optional[Tuple[Any, ...]] = None,
         kwargs: Optional[Dict[str, Any]] = None,
+        aloc: Optional[int] = None,
     ) -> None:
         self._exc = self._exc_validation(exc)
         self._exc_msg = self._exc_msg_validation(exc_msg)
         self._key = self._key_validation(key)
         self._args = self._args_validation(args)
         self._kwargs = self._kwargs_validation(kwargs)
+        self._aloc = self._aloc_validation(aloc)
 
     @property
     def exc(self) -> Type:
@@ -122,6 +127,10 @@ class Validator(ABC):
         return self._kwargs
 
     @property
+    def aloc(self):
+        return self._aloc
+
+    @property
     @abstractmethod
     def name(self):
         pass
@@ -136,6 +145,7 @@ class Validator(ABC):
         key: KeyType,
         args: Optional[Tuple[Any, ...]] = None,
         kwargs: Optional[Dict[str, Any]] = None,
+        aloc: Optional[int] = None,
     ) -> Any:
         """
         The validation process can be changed
@@ -170,8 +180,29 @@ class Validator(ABC):
         :param key: Validation key (callable | attribute)
         :param args: Key args
         :param kwargs: Key kwargs
+        :param aloc: The location of arg in Validation key
         :return: Any
         """
+
+        # This internal function is responsible for
+        # placing the argument relative to the position
+        # specified in positional arguments.
+        def _arg_placement(arg_, loc_, args_):
+            base, alen = 0, len(args_)
+            # Argument position validation
+            if loc_ > len(args_) or loc_ < base:
+                err_msg_ = (
+                    f"The location where "
+                    f"argument should be "
+                    f"placed is out of range."
+                )
+                raise ValidationKeyError(err_msg_)
+            # Creating an iterator
+            ait = iter(args_)
+            # Iterate over positional arguments,
+            # place arguments between them,
+            for i in range(alen + 1):
+                yield arg_ if i == loc_ else next(ait)
 
         # If validation key is not set,
         # 'arg' itself will be returned
@@ -195,7 +226,7 @@ class Validator(ABC):
                     f"{a} is not of type "
                     f"'{type(t).__name__}'"
                 )
-                raise ValidatorError(err_msg)
+                raise ValidationKeyError(err_msg)
             c += 1
 
         # Attribute validation
@@ -203,26 +234,46 @@ class Validator(ABC):
             try:
                 attr = getattr(arg, key)
             except AttributeError as e:
-                raise ValidatorError(e) from None
+                raise ValidationKeyError(e) from None
             else:
                 if isinstance(attr, Callable):
                     try:
-                        r = attr(*args, **kwargs)
+                        if aloc is not None:
+                            r = attr(
+                                *_arg_placement(
+                                    arg,
+                                    aloc,
+                                    args,
+                                ),
+                                **kwargs,
+                            )
+                        else:
+                            r = attr(*args, **kwargs)
                     except BaseException as e:
-                        raise ValidatorError(e) from None
+                        raise ValidationKeyError(e) from None
                     else:
                         return r
                 return attr
         # Callable validation
         elif isinstance(key, Callable):
             try:
-                res = key(
-                    arg,
-                    *args,
-                    **kwargs,
-                )
+                if aloc is not None:
+                    res = key(
+                        *_arg_placement(
+                            arg,
+                            aloc,
+                            args,
+                        ),
+                        **kwargs,
+                    )
+                else:
+                    res = key(
+                        arg,
+                        *args,
+                        **kwargs,
+                    )
             except BaseException as e:
-                raise ValidatorError(e) from None
+                raise ValidationKeyError(e) from None
             else:
                 return res
 
@@ -317,6 +368,27 @@ class Validator(ABC):
             return kwargs
         raise TypeError
 
+    def _aloc_validation(
+        self,
+        aloc: Optional[int],
+    ) -> Optional[int]:
+        """
+        This method validates the 'where' (location of arg)
+        and, if confirmed, returns the 'where' itself.
+
+        :param aloc: The location of arg in Validation key
+        :return: int | None
+        """
+
+        if self._key is None and \
+            aloc is not None:
+            err_msg = (
+                "Argument location cannot "
+                "be set if 'key' is not set."
+            )
+            raise ValidatorError(err_msg)
+        return aloc
+
 
 class CallVal(Validator):
     """
@@ -352,6 +424,7 @@ class CallVal(Validator):
             self.key,
             self.args,
             self.kwargs,
+            self.aloc,
         )
         # Get the return value from a callable
         res = self._callable(k)
@@ -398,6 +471,9 @@ class CallVal(Validator):
             "can only have one parameter"
         )
         raise ValidatorError(err_msg)
+
+    def __repr__(self):
+        return f"CallableValidator({self._callable})"
 
 
 class MultiVal(Validator):
@@ -475,6 +551,9 @@ class MultiVal(Validator):
                 raise ValidatorError(err_msg)
         return iterable
 
+    def __repr__(self):
+        return f"MultiVal({tuple(self)})"
+
 
 class IterVal(Validator):
     """
@@ -505,6 +584,7 @@ class IterVal(Validator):
             self.key,
             self.args,
             self.kwargs,
+            self.aloc,
         )
         # Checking type
         if not isinstance(k, Iterable):
@@ -569,6 +649,9 @@ class IterVal(Validator):
             raise ValidatorError(err_msg)
         return validator
 
+    def __repr__(self):
+        return f"IterVal({self._validator})"
+
 
 class TypeVal(Validator):
     """
@@ -595,7 +678,7 @@ class TypeVal(Validator):
     def name(self):
         # The name of the interface validator
         # will be returned from argsv.validators
-        return "typeval"
+        return type(self).__name__.lower()
 
     def __call__(self, arg: Any) -> None:
         # Get the type
@@ -605,7 +688,8 @@ class TypeVal(Validator):
             arg,
             self.key,
             self.args,
-            self.kwargs
+            self.kwargs,
+            self.aloc,
         )
         try:
             # Checking type
@@ -615,7 +699,8 @@ class TypeVal(Validator):
                 # Set a default message
                 if err_msg is None:
                     err_msg = (
-                        f"Expected type is '{t.__name__}', "
+                        f"Expected type is "
+                        f"'{self._get_ftype(t)}', "
                         f"But received: '{type(k).__name__}'"
                     )
                 raise self.exc(err_msg)
@@ -626,6 +711,31 @@ class TypeVal(Validator):
                 "a tuple of types, or a union"
             )
             raise ValidatorError(err_msg)
+
+    @staticmethod
+    def _get_ftype(
+        type_: Union[type, Tuple[type, ...]]
+    ) -> str:
+        """
+        This method accepts different types,
+        formats them in a readable way, and
+        returns them in 'str' format.
+
+        :param type_: type | Tuple[type, ...] | Union
+        :return: str
+        """
+        if isinstance(type_, type):
+            return type_.__name__
+        if isinstance(type_, tuple):
+            t = map(
+                lambda t_: t_.__name__,
+                type_,
+            )
+            return f"({', '.join(t)})"
+        return type_.__str__()
+
+    def __repr__(self):
+        return f"TypeVal({self._get_ftype(self._type)})"
 
 
 class FromTo(Validator):
@@ -659,7 +769,7 @@ class FromTo(Validator):
     def name(self) -> str:
         # The name of the interface validator
         # will be returned from argsv.validators
-        return "fromto"
+        return type(self).__name__.lower()
 
     def __call__(self, arg: Any) -> None:
         # Get the value to be validated.
@@ -668,6 +778,7 @@ class FromTo(Validator):
             self.key,
             self.args,
             self.kwargs,
+            self.aloc,
         )
         # Type checking the value
         # returned from the validation key
@@ -716,6 +827,9 @@ class FromTo(Validator):
         )
         raise ValidatorError(err_msg)
 
+    def __repr__(self):
+        return f"FromTo({self._from}, {self._to})"
+
 
 class CompVal(Validator):
     """
@@ -760,6 +874,7 @@ class CompVal(Validator):
             self.key,
             self.args,
             self.kwargs,
+            self.aloc,
         )
         # Get comparison result
         # and error message
@@ -865,6 +980,9 @@ class CompVal(Validator):
         )
         raise ValidatorError(err_msg)
 
+    def __repr__(self):
+        return f"{self.name}({self._other})"
+
 
 class ContainsVal(Validator):
     """
@@ -902,6 +1020,7 @@ class ContainsVal(Validator):
             self.key,
             self.args,
             self.kwargs,
+            self.aloc,
         )
 
         # Condition definition
@@ -946,3 +1065,6 @@ class ContainsVal(Validator):
             f"{container} is not container"
         )
         raise ValidatorError(err_msg)
+
+    def __repr__(self):
+        return f"{self.name}({self._container})"
