@@ -15,14 +15,14 @@ __pkg_name__ = "argsv"
 __version__ = "0.1.0"
 
 # Brief description of the package
-__description__ = "argsv is a library for validating arguments of callable objects."
+__description__ = "argsv is a library for validating arguments passed to callables. With this library, you can validate arguments sent to callables in a simpler, more readable, and well-defined context."
 
 # Details of the original author of the package
 __author__  = "mimseyedi"
 __email__   = "mim.seyedi@gmail.com"
 
 # Date of last package release
-__date__    = "2025-01-21"
+__date__    = "2025-01-29"
 
 # Keywords related to the package
 __keywords__ = [
