@@ -1,14 +1,12 @@
-# 5. Ways of Usage
-
 There are various methods and approaches for **validating arguments**, and as a programmer, you have a lot of **flexibility** in this regard. **argsv** is not meant to impose limitations or restrict your options. It strives, as much as possible, to utilize structures and tools that can be applied in diverse and different ways.  
 
 Nevertheless, in this topic, we are going to delve a bit into how to use **argsv** and, in general, how to **validate arguments**.
 
 At first glance, **argsv** and using the `argsval` **decorator** might seem like an **appealing** and **readable** idea. However, to avoid **complex** and **combined validations** while keeping the validation-related code concise and **readable** in the **argsv** style, we can use the following approach:
 
-1. Assign a specific file for the [validators](#).  
-2. Design the **validators** as **functions** and leverage **argsv**'s [built-in validators](#).  
-3. Use the `argsval` **decorator** and the implemented **validators**.  
+1. Assign a specific file for the [validators](https://github.com/mimseyedi/argsv/wiki/3.-Validators).  
+2. Design the **validators** as **functions** and leverage **argsv**'s [built-in validators](https://github.com/mimseyedi/argsv/wiki/3.-Validators#34-built-in-validators-).  
+3. Use the [argsval](https://github.com/mimseyedi/argsv/wiki/2.-Validation-Process#23-validation-by-decorator-) **decorator** and the implemented **validators**.  
 
 Let's look at an example together:
 
@@ -30,7 +28,7 @@ def iterate(*iterables):
         yield from it
 ```
 
-First, we create a **file** for our [validators](#) and **implement** them based on the **parameters** of our **functions**.
+First, we create a **file** for our [validators](https://github.com/mimseyedi/argsv/wiki/3.-Validators) and **implement** them based on the **parameters** of our **functions**.
 
 ```python
 # validators.py
@@ -65,7 +63,7 @@ def iterables_validator(iterables):
             )
 ```
 
-As you can see, we **implemented** our [validators](#) in different ways—sometimes **independently**, sometimes with the help of argsv's [built-in validators](#), and sometimes by returning a [validation pattern](#). Now, we can use them like this:
+As you can see, we **implemented** our [validators](https://github.com/mimseyedi/argsv/wiki/3.-Validators) in different ways—sometimes **independently**, sometimes with the help of argsv's [built-in validators](https://github.com/mimseyedi/argsv/wiki/3.-Validators#34-built-in-validators-), and sometimes by returning a [validation pattern](https://github.com/mimseyedi/argsv/wiki/2.-Validation-Process#22-validation-pattern-). Now, we can use them like this:
 
 ```python
 # dummy_module.py
@@ -89,15 +87,8 @@ def iterate(*iterables):
         yield from it
 ```
 
-As you can see, with this **approach** and **structure**, not only is the [validation process](#) carried out in a more **organized** and **separated** manner from the main body of the function, but it is also more **readable** and **simpler**.  
+As you can see, with this **approach** and **structure**, not only is the [validation process](https://github.com/mimseyedi/argsv/wiki/2.-Validation-Process) carried out in a more **organized** and **separated** manner from the main body of the function, but it is also more **readable** and **simpler**.  
 
-You can also use the [built-in validators](#) directly **within** the function body for **internal** and direct **validations**, if you prefer. Alternatively, you can define your own [validation patterns](#) as **constants** in a separate file and use them as needed.  
+You can also use the [built-in validators](https://github.com/mimseyedi/argsv/wiki/3.-Validators#34-built-in-validators-) directly **within** the function body for **internal** and direct **validations**, if you prefer. Alternatively, you can define your own [validation patterns](https://github.com/mimseyedi/argsv/wiki/2.-Validation-Process#22-validation-pattern-) as **constants** in a separate file and use them as needed.  
 
 In any case, you have the freedom to choose different **validation methods** and create your own **style**. So, feel free to experiment and develop a pattern that suits you best!
-
-
-<br>
-<div style="display: flex; justify-content: space-between; text-align: center;">
-  <a href="./previous.md">❮❮ Previous<br>(Errors and Reports)</a>
-  <a href="./next.md">Next ❯❯<br>(Contribution)</a>
-</div>
