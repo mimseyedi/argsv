@@ -1,0 +1,3 @@
+**argsv** is an open and extensible project. Any contributions and collaborations, including bug reports, development of different parts of the argsv library, modifications, improvements, and more, are warmly welcomed. You can contribute by forking the project and submitting a [pull request](https://github.com/mimseyedi/argsv/pulls).  
+
+If you find argsv useful, please support it by sharing it with your friends and giving it a **star**. Thank you!
