@@ -10,10 +10,11 @@ In this file, built-in Validators such as::
 
     CallVal
     MultiVal
+    IterVal
     TypeVal
     FromTo
     CompVal
-    ContansVal
+    ContainsVal
 
 are implemented by inheriting from 'Validator'.
 These validators are implemented to be used and
@@ -23,8 +24,9 @@ For standard use of these Validators, refer to::
 
     from argsv.validators import ...
 
-and use the implemented validators
-that are suitable intermediaries.
+For a better experience and easier use of these
+built-in validators, please utilize their interfaces
+in the mentioned path above.
 """
 
 
@@ -74,12 +76,12 @@ class Validator(ABC):
 
     This class allows other Validators to be easily implemented
     by controlling and managing properties such as
-    exception type, exception message, validation key, and its arguments.
+    `exception type`, `exception message`, `validation key`, and its `arguments`.
 
     Also, each Validator is required to implement a property
-    called 'name' to refer to the name of the Validator,
+    called `name` to refer to the name of the Validator,
     and its validation process must be performed in the
-    '__call__' dunder method, like a callable object.
+    `__call__` dunder method, like a callable object.
 
     :param exc: Exception type
     :param exc_msg: Exception message
@@ -151,30 +153,48 @@ class Validator(ABC):
         The validation process can be changed
         by a validation key from the pure value
         of an argument to the value of a callable
-        with the argument or a property of the argument.
+        with the argument or a attribute of the argument.
+
         This method returns the expected value
         if the validation key is set, and the value
         of the argument itself if the validation key
         is not set.
 
         The following is an example to show how to validate
-        the length of an argument using 'argsv' validators::
+        the length of an argument using `argsv` validators::
 
             from argsv import argsval
             from argsv.validators import eq
             @argsval(a=eq(3, key=len))
-            def func(a: list):
+            def dummy(a: list):
                 return a
 
         Here, instead of validating the argument,
-        its length is validated and if it is equal to 3,
-        it is accepted. In this example, this does
-        not happen and the program stops with an error::
+        its length is validated and if it is `equal to 3`,
+        it is accepted.
 
-            ValidationError: Validation stopped while checking
-            the argument passed to parameter 'a', in callable 'func'
-            From validator: eq
-             └── ValidationError: 2 is not equal to 3
+        If you are using a function as a validation key
+        that does not take the argument being validated
+        as the first input, you can specify the location
+        where the argument should be sent with the 'aloc' parameter::
+
+            from argsv import argsval
+            from argsv.validators import iterval, eq
+            @argsval(
+                a=iterval(
+                    eq(10),
+                    key=filter,
+                    args=(lambda x: x > 5,),
+                    aloc=1,
+                )
+            )
+            def dummy(a):
+                return a
+
+        In this example, since the `filter` takes an iterable
+        as its second input, the argument `a` is sent
+        to the second parameter of `filter` as
+        a validation key using the `aloc` assignment.
 
         :param arg: Argument
         :param key: Validation key (callable | attribute)
@@ -373,8 +393,9 @@ class Validator(ABC):
         aloc: Optional[int],
     ) -> Optional[int]:
         """
-        This method validates the 'where' (location of arg)
-        and, if confirmed, returns the 'where' itself.
+        This method validates the `aloc`
+        (location of arg in Validation key)
+        and, if confirmed, returns the `aloc` itself.
 
         :param aloc: The location of arg in Validation key
         :return: int | None
@@ -392,9 +413,9 @@ class Validator(ABC):
 
 class CallVal(Validator):
     """
-    The CallVal class is a Validator that performs validation
+    The `CallVal` class is a Validator that performs validation
     upon receiving a callable.
-    If the return value of the callable is False,
+    If the return value of the callable is `False`,
     the validation fails, otherwise the callable itself
     is responsible for generating the error.
 
@@ -429,7 +450,7 @@ class CallVal(Validator):
         # Get the return value from a callable
         res = self._callable(k)
         # Setting the exception and default message
-        # if the callable result is 'False'
+        # if the callable result is `False`
         if res is False:
             # Get the value of exc_msg
             err_msg = self.exc_msg
@@ -479,7 +500,7 @@ class CallVal(Validator):
 class MultiVal(Validator):
     """
     This Validator, by receiving other Validators, is responsible
-    for performing multiple validations. Specifically, 'MultiVal'
+    for performing multiple validations. Specifically, `MultiVal`
     behaves like an Iterable and has the ability to perform
     multiple validations for a single argument.
 
@@ -557,7 +578,7 @@ class MultiVal(Validator):
 
 class IterVal(Validator):
     """
-    The IterVal class is used to create Validators
+    The `IterVal` class is used to create Validators
     that are supposed to validate Iterables.
     These Validators validate all items against a given
     Validator by moving through the Iterable they receive.
@@ -655,10 +676,10 @@ class IterVal(Validator):
 
 class TypeVal(Validator):
     """
-    The TypeVal class is a validator for checking
+    The `TypeVal` class is a validator for checking
     the type of arguments.
     This class behaves just like the built-in 'isinstance' function
-    and can be passed a specific type, a tuple of types, or a Union.
+    and can be passed a specific `type`, a `tuple of types`, or a `Union`.
 
     :param type_: type | Tuple[type, ...] | Union
     :param args: exc, exc_msg
@@ -677,7 +698,7 @@ class TypeVal(Validator):
     @property
     def name(self):
         # The name of the interface validator
-        # will be returned from argsv.validators
+        # will be returned from `argsv.validators`
         return type(self).__name__.lower()
 
     def __call__(self, arg: Any) -> None:
@@ -719,7 +740,7 @@ class TypeVal(Validator):
         """
         This method accepts different types,
         formats them in a readable way, and
-        returns them in 'str' format.
+        returns them in `str` format.
 
         :param type_: type | Tuple[type, ...] | Union
         :return: str
@@ -740,13 +761,13 @@ class TypeVal(Validator):
 
 class FromTo(Validator):
     """
-    The FromTo class is a Validator for validating
+    The `FromTo` class is a Validator for validating
     arguments within a specific numeric range.
     This class is used with its Validator interface in
-    'argsv.validators' and can be used to check an argument
+    `argsv.validators` and can be used to check an argument
     within a specific range.
 
-    Note: The FromTo validator only works with numbers.
+    `Note: The FromTo validator only works with numbers.`
 
     :param from_: from (<'int'> | <'float'>)
     :param to_: to (<'int'> | <'float'>)
@@ -768,7 +789,7 @@ class FromTo(Validator):
     @property
     def name(self) -> str:
         # The name of the interface validator
-        # will be returned from argsv.validators
+        # will be returned from `argsv.validators`
         return type(self).__name__.lower()
 
     def __call__(self, arg: Any) -> None:
@@ -833,7 +854,7 @@ class FromTo(Validator):
 
 class CompVal(Validator):
     """
-    The CompVal class is used to create comparison validators.
+    The `CompVal` class is used to create comparison validators.
     Validators that validate and compare arguments with another value.
 
     The validators interface of this class in argsv.validators::
@@ -986,15 +1007,15 @@ class CompVal(Validator):
 
 class ContainsVal(Validator):
     """
-    The ContainsVal class is implemented to create validators
+    The `ContainsVal` class is implemented to create validators
     that are supposed to validate the existence of
     an argument within a container.
 
     This class takes a container and checks whether the argument
     being validated is present within it or not.
 
-    There is also a parameter called 'not_' which reverses
-    the validation and its default value is False.
+    There is also a parameter called `not_` which reverses
+    the validation and its default value is `False`.
     """
 
     def __init__(
@@ -1010,11 +1031,11 @@ class ContainsVal(Validator):
 
     @property
     def name(self) -> str:
-        # Set name, considering, 'self._not'
+        # Set name, considering, `self._not`
         return "inval" if not self._not else "notinval"
 
     def __call__(self, arg: Any) -> None:
-        # Get the value to be validated.
+        # Get the value to be validated
         k = self._get_key(
             arg,
             self.key,
@@ -1053,7 +1074,7 @@ class ContainsVal(Validator):
         """
         The task of this method is to validate
         the main-input of the class.
-        The input must be of type <'Container'>.
+        The input must be of type `<'Container'>`.
 
         :param container: A container object
         :return: Container
