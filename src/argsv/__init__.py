@@ -1,7 +1,9 @@
 """
 @rgs✔
 
-argsv is a library for validating arguments of callable objects.
+argsv is a library for validating arguments passed to callables.
+With this library, you can validate arguments sent to callables
+in a simpler, more readable, and well-defined context.
 
 The goal of argsv development is to validate arguments outside
 the body of callables, so that callables can be implemented more
