@@ -27,11 +27,16 @@ class ValidatorError(ArgsVError):
     """
 
 
+class ValidationKeyError(ValidatorError):
+    """
+    This exception is raised when an error related
+    to the Validation Key occurs.
+    """
+
+
 class PatternError(ArgsVError):
     """
     This exception is related to validation patterns.
     This exception is raised when a pattern does not have
     its correct structure for any reason.
     """
-
-
