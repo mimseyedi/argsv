@@ -11,7 +11,7 @@ arguments and even combine them.
 
 These Validators are actually interfaces between
 the programmer and the Validator classes implemented
-in 'argsv._validators'.
+in `argsv._validators`.
 
 In this way, they are available and can
 be used for greater convenience.
@@ -40,6 +40,7 @@ def callval(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This is a validator for validating the arguments
@@ -61,7 +62,7 @@ def callval(
 
         from argsv import argsval
         @argsval(a=callval(lambda x: x > 0))
-        def func(a):
+        def dummy(a):
             return a
 
     You can specify the exception type with **'exc'** and also the message
@@ -75,17 +76,22 @@ def callval(
 
         from argsv import argsval
         @argsval(a=lambda x: x == 3, key=len)
-        def func(a):
+        def dummy(a):
             return a
 
     Here, instead of validating the original value of the argument,
     the output of the len function is validated against the input
     of the argument and finally it is checked whether
-    the length of a is equal to 3 or not.
+    the length of `a` is `equal to 3 or not`.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param callable_: A CallableType object
     :param exc: Exception type
@@ -93,6 +99,7 @@ def callval(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -103,6 +110,7 @@ def callval(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -126,13 +134,13 @@ def multival(
                 lambda x: x != 7,
             )
         )
-        def func(a):
+        def dummy(a):
             return a
 
     Here, with two conditions or lambda validators, using **'multival'**,
-    the argument passed to the parameter 'a' is validated.
+    the argument passed to the parameter `a` is validated.
     According to the conditions specified by the validators, the argument
-    'a' must be greater than **5** but must not be equal to **7**.
+    `a` must be greater than **5** but must not be equal to **7**.
 
     :param validators: *(Validator | CallableType)
     :return: Validator
@@ -149,6 +157,7 @@ def iterval(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator is used to validate arguments
@@ -163,11 +172,11 @@ def iterval(
 
         from argsv import argsval
         @argsval(a=iterval(lambda x: x > 0))
-        def func(a: Iterable):
+        def dummy(a: Iterable):
             return a
 
     In this example, **'iterval'** checks whether all items in the
-    iterable argument passed to 'a' are greater than zero
+    iterable argument passed to `a` are greater than zero
     and are considered positive numbers.
 
     You can specify the exception type with **'exc'** and also the message
@@ -186,16 +195,21 @@ def iterval(
                 key=lambda x: x ** 2,
             )
         )
-        def func(a: Iterable)
+        def dummy(a: Iterable)
             return a
 
     In this example, instead of validating the
-    original values of 'a', the **squares** of the items of
-    'a' are validated and are accepted if they are all **greater** than **10**.
+    original values of `a`, the **squares** of the items of
+    `a` are validated and are accepted if they are all `greater than 10`.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param validator: A (Validator | CallableType) object
     :param exc: Exception type
@@ -203,6 +217,7 @@ def iterval(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -213,6 +228,7 @@ def iterval(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -224,6 +240,7 @@ def typeval(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator can validate the type of an argument.
@@ -236,7 +253,7 @@ def typeval(
 
         from argsv import argsval
         @argsval(a=typeval(float))
-        def func(a):
+        def dummy(a):
             return a
 
     You can specify the exception type with **'exc'** and also the message
@@ -250,16 +267,21 @@ def typeval(
 
         from argsv import argsval
         @argsval(a=typeval(Iterator, key="__iter__"))
-        def func(a):
+        def dummy(a):
             return a
 
     Here, it is checked whether the return value from the
     **'__iter__()'** dunder-method, the argument passed to the
-    'a' parameter, is of type **Iterator** or not.
+    `a` parameter, is of type **Iterator** or not.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param type_: specific type, a tuple of types, or a Union
     :param exc: Exception type
@@ -267,6 +289,7 @@ def typeval(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -277,6 +300,7 @@ def typeval(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -289,6 +313,7 @@ def fromto(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator is used to validate arguments
@@ -305,13 +330,13 @@ def fromto(
 
         from argsv import argsval
         @argsval(a=fromto(1, 5))
-        def func(a):
+        def dummy(a):
             return a
 
-    In this example, it checks whether 'a'
+    In this example, it checks whether `a`
     is between **1** and **5** or not?
 
-    Note that **1** and **5** are also considered part of the range!
+    `Note` that **1** and **5** are also considered part of the range!
 
     You can specify the exception type with **'exc'** and also the message
     that should be published when an error occurs in **'exc_msg'**.
@@ -324,7 +349,7 @@ def fromto(
 
         from argsv import argsval
         @argsval(a=fromto(1, 3), key=len)
-        def func(a: list):
+        def dummy(a: list):
             return a
 
     Here we check whether the **length** of 'a' is
@@ -334,6 +359,11 @@ def fromto(
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
 
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
+
     :param from_: start point
     :param to_: end point
     :param exc: Exception type
@@ -341,6 +371,7 @@ def fromto(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -352,6 +383,7 @@ def fromto(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -363,6 +395,7 @@ def eq(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator is a comparison validator that compares an
@@ -373,7 +406,7 @@ def eq(
 
         from argsv import argsval
         @argsval(a=eq(5))
-        def func(a):
+        def dummy(a):
             return a
 
     You can specify the exception type with **'exc'** and also the message
@@ -387,15 +420,20 @@ def eq(
 
         from argsv import argsval
         @argsval(a=eq(3), key=len)
-        def func(a: list):
+        def dummy(a: list):
             return a
 
-    Here it is checked that the **length** of 'a'
+    Here it is checked that the **length** of `a`
     must be equal to **3**.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param other: The object to be compared with
     :param exc: Exception type
@@ -403,6 +441,7 @@ def eq(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -414,6 +453,7 @@ def eq(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -425,6 +465,7 @@ def ne(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator is a comparison validator that compares an
@@ -435,7 +476,7 @@ def ne(
 
         from argsv import argsval
         @argsval(a=ne(3))
-        def func(a):
+        def dummy(a):
             return a
 
     You can specify the exception type with **'exc'** and also the message
@@ -449,15 +490,20 @@ def ne(
 
         from argsv import argsval
         @argsval(a=ne(0), key=len)
-        def func(a: list):
+        def dummy(a: list):
             return a
 
-    Here it is checked that the **length** of 'a'
+    Here it is checked that the **length** of `a`
     should **not be equal** to **zero**.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param other: The object to be compared with
     :param exc: Exception type
@@ -465,6 +511,7 @@ def ne(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -476,6 +523,7 @@ def ne(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -487,6 +535,7 @@ def gt(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator is a comparison validator that compares an
@@ -498,7 +547,7 @@ def gt(
 
         from argsv import argsval
         @argsval(a=gt(0))
-        def func(a):
+        def dummy(a):
             return a
 
     You can specify the exception type with **'exc'** and also the message
@@ -512,15 +561,20 @@ def gt(
 
         from argsv import argsval
         @argsval(a=gt(0), key=len)
-        def func(a: list):
+        def dummy(a: list):
             return a
 
-    Here it is checked that the **length** of 'a'
+    Here it is checked that the **length** of `a`
     must be **greater** than **zero**.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param other: The object to be compared with
     :param exc: Exception type
@@ -528,6 +582,7 @@ def gt(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -539,6 +594,7 @@ def gt(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -550,6 +606,7 @@ def lt(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator is a comparison validator that compares an
@@ -561,7 +618,7 @@ def lt(
 
         from argsv import argsval
         @argsval(a=lt(10))
-        def func(a):
+        def dummy(a):
             return a
 
     You can specify the exception type with **'exc'** and also the message
@@ -575,15 +632,20 @@ def lt(
 
         from argsv import argsval
         @argsval(a=lt(3), key=len)
-        def func(a: list):
+        def dummy(a: list):
             return a
 
-    Here it is checked that the **length** of 'a'
+    Here it is checked that the **length** of `a`
     must be **less** than **3**.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param other: The object to be compared with
     :param exc: Exception type
@@ -591,6 +653,7 @@ def lt(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -602,6 +665,7 @@ def lt(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -613,6 +677,7 @@ def ge(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator is a comparison validator that compares an
@@ -624,7 +689,7 @@ def ge(
 
         from argsv import argsval
         @argsval(a=ge(0))
-        def func(a):
+        def dummy(a):
             return a
 
     You can specify the exception type with **'exc'** and also the message
@@ -638,15 +703,20 @@ def ge(
 
         from argsv import argsval
         @argsval(a=ge(1), key=len)
-        def func(a: list):
+        def dummy(a: list):
             return a
 
-    Here it is checked that the **length** of 'a'
+    Here it is checked that the **length** of `a`
     must be **greater** than or **equal** to **1**.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param other: The object to be compared with
     :param exc: Exception type
@@ -654,6 +724,7 @@ def ge(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -665,6 +736,7 @@ def ge(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -676,6 +748,7 @@ def le(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator is a comparison validator that compares an
@@ -687,7 +760,7 @@ def le(
 
         from argsv import argsval
         @argsval(a=le(9))
-        def func(a):
+        def dummy(a):
             return a
 
     You can specify the exception type with **'exc'** and also the message
@@ -701,15 +774,20 @@ def le(
 
         from argsv import argsval
         @argsval(a=le(3), key=len)
-        def func(a: list):
+        def dummy(a: list):
             return a
 
-    Here it is checked that the **length** of 'a'
+    Here it is checked that the **length** of `a`
     must be **less** than or **equal** to **3**.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param other: The object to be compared with
     :param exc: Exception type
@@ -717,6 +795,7 @@ def le(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -728,6 +807,7 @@ def le(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -739,6 +819,7 @@ def inval(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator validates the membership status of an
@@ -750,10 +831,10 @@ def inval(
 
         from argsv import argsval
         @argsval(a=inval(range(1, 10)))
-        def func(a):
+        def dummy(a):
             return a
 
-    In this example, it checks whether 'a' is a
+    In this example, it checks whether `a` is a
     **single digit** number or not.
 
     You can specify the exception type with **'exc'** and also the message
@@ -767,15 +848,20 @@ def inval(
 
         from argsv import argsval
         @argsval(a=inval(range(1, 4), key=len)
-        def func(a: list):
+        def dummy(a: list):
             return a
 
     In this example, it checks whether the
-    **length** of 'a' is in the range **1** to **3**.
+    **length** of `a` is in the range **1** to **3**.
 
     If the validation key is a callable,
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
+
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
 
     :param container: A container object
     :param exc: Exception type
@@ -783,6 +869,7 @@ def inval(
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -794,6 +881,7 @@ def inval(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
 
 
@@ -805,6 +893,7 @@ def notinval(
     key: v.KeyType=None,
     args: Optional[Tuple[Any, ...]]=None,
     kwargs: Optional[Dict[str, Any]]=None,
+    aloc: Optional[int]=None,
 ) -> v.Validator:
     """
     This validator validates the membership status
@@ -817,10 +906,10 @@ def notinval(
 
         from argsv import argsval
         @argsval(a=notinval(range(1, 10)))
-        def func(a):
+        def dummy(a):
             return a
 
-    In this example, it checks whether 'a' is a
+    In this example, it checks whether `a` is a
     number with **more** than **one** digit.
 
     You can specify the exception type with **'exc'** and also the message
@@ -834,7 +923,7 @@ def notinval(
 
         from argsv import argsval
         @argsval(a=notinval(range(65, 123), key=ord))
-        def func(a: str):
+        def dummy(a: str):
             return a
 
     In this example, with the help of validator **'notinval'** and
@@ -845,12 +934,18 @@ def notinval(
     its positional and keyword arguments can be passed
     to it via **'args'** and **'kwargs'**.
 
+    If you are using a function as a Validation Key
+    that does not take the argument being validated
+    as the first input, you can specify the location
+    where the argument should be sent with the **'aloc'** parameter.
+
     :param container: A container object
     :param exc: Exception type
     :param exc_msg: Exception message
     :param key: Validation key (callable | attribute)
     :param args: Validation key args
     :param kwargs: Validation key kwargs
+    :param aloc: The location of arg in Validation key
     :return: Validator
     """
 
@@ -862,4 +957,5 @@ def notinval(
         key=key,
         args=args,
         kwargs=kwargs,
+        aloc=aloc,
     )
