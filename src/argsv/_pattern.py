@@ -179,3 +179,6 @@ class Pattern:
                 raise PatternError(err_msg)
         # Returning the Pattern itself
         return self
+
+    def __repr__(self):
+        return f"ValidationPattern({self._pattern})"
